@@ -1,0 +1,240 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Student Marks System</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f4f6f8;
+      margin: 0;
+      padding: 20px;
+    }
+
+    .container {
+      max-width: 1000px;
+      margin: auto;
+      background: white;
+      padding: 30px;
+      border-radius: 8px;
+      box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+    }
+
+    h1 {
+      text-align: center;
+      margin-bottom: 20px;
+      color: #333;
+    }
+
+    .form {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-bottom: 20px;
+    }
+
+    input {
+      flex: 1;
+      padding: 10px;
+      min-width: 150px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+
+    button {
+      padding: 10px 15px;
+      background-color: #007bff;
+      color: white;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+
+    button:hover {
+      background-color: #0056b3;
+    }
+
+    .main-content {
+      display: flex;
+      gap: 20px;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      flex: 3;
+    }
+
+    th, td {
+      padding: 10px;
+      border: 1px solid #ccc;
+      text-align: left;
+    }
+
+    thead {
+      background-color: #007bff;
+      color: white;
+    }
+
+    .controls {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      min-width: 150px;
+    }
+
+    .info {
+      margin-top: 20px;
+      font-weight: bold;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <h1>Student Marks System</h1>
+
+    <div class="form">
+      <input type="text" id="studentName" placeholder="Enter Student Name">
+      <input type="number" id="studentMarks" placeholder="Enter Marks (0-100)" min="0" max="100">
+      <button onclick="addStudent()">Add Student</button>
+    </div>
+
+    <div class="main-content">
+      <!-- Table Section -->
+      <table>
+        <thead>
+          <tr>
+            <th>#</th>
+            <th>Student Name</th>
+            <th>Marks</th>
+          </tr>
+        </thead>
+        <tbody id="tableBody">
+          <!-- Rows added dynamically -->
+        </tbody>
+      </table>
+
+      <!-- Controls Section -->
+      <div class="controls">
+        <button onclick="showAverage()">Show Average</button>
+        <button onclick="showHighest()">Show Highest</button>
+        <button onclick="sortByMarks()">Sort by Marks</button>
+        <button onclick="removeLast()">Remove Last</button>
+        <button onclick="removeHighest()">Remove Highest</button>
+        <button onclick="resetToSample()">Reset Sample</button>
+      </div>
+    </div>
+
+    <div class="info" id="infoDisplay"></div>
+  </div>
+
+  <script>
+    let studentList = [];
+    let sortAsc = true;
+
+    function addStudent() {
+      const nameInput = document.getElementById('studentName');
+      const marksInput = document.getElementById('studentMarks');
+      const name = nameInput.value.trim();
+      const marks = parseFloat(marksInput.value);
+
+      if (name === '' || isNaN(marks) || marks < 0 || marks > 100) {
+        alert('Please enter a valid student name and marks between 0 and 100.');
+        return;
+      }
+
+      studentList.push({ name, marks });
+      updateTable();
+
+      nameInput.value = '';
+      marksInput.value = '';
+      nameInput.focus();
+    }
+
+    function updateTable() {
+      const tableBody = document.getElementById('tableBody');
+      tableBody.innerHTML = '';
+
+      studentList.forEach((student, index) => {
+        const row = `<tr>
+          <td>${index + 1}</td>
+          <td>${student.name}</td>
+          <td>${student.marks}</td>
+        </tr>`;
+        tableBody.innerHTML += row;
+      });
+
+      document.getElementById('infoDisplay').textContent = '';
+    }
+
+    function showAverage() {
+      if (studentList.length === 0) {
+        document.getElementById('infoDisplay').textContent = 'No students to calculate average.';
+        return;
+      }
+      const sum = studentList.reduce((acc, s) => acc + s.marks, 0);
+      const avg = (sum / studentList.length).toFixed(2);
+      document.getElementById('infoDisplay').textContent = `Average Marks: ${avg}`;
+    }
+
+    function showHighest() {
+      if (studentList.length === 0) {
+        document.getElementById('infoDisplay').textContent = 'No students available.';
+        return;
+      }
+
+      const maxMarks = Math.max(...studentList.map(s => s.marks));
+      const topStudents = studentList.filter(s => s.marks === maxMarks);
+      const names = topStudents.map(s => s.name).join(', ');
+
+      document.getElementById('infoDisplay').textContent =
+        `Highest Marks: ${maxMarks} by ${names}`;
+    }
+
+    function sortByMarks() {
+      studentList.sort((a, b) => sortAsc ? a.marks - b.marks : b.marks - a.marks);
+      sortAsc = !sortAsc;
+      updateTable();
+    }
+
+    function removeLast() {
+      if (studentList.length === 0) {
+        alert("No student to remove.");
+        return;
+      }
+      studentList.pop();
+      updateTable();
+    }
+
+    function removeHighest() {
+      if (studentList.length === 0) {
+        alert("No students to remove.");
+        return;
+      }
+
+      const maxMarks = Math.max(...studentList.map(s => s.marks));
+      studentList = studentList.filter(s => s.marks !== maxMarks);
+      updateTable();
+
+      document.getElementById('infoDisplay').textContent =
+        `Removed student(s) with highest marks: ${maxMarks}`;
+    }
+
+    function resetToSample() {
+      studentList = [
+        { name: 'Alice', marks: 85 },
+        { name: 'Bob', marks: 92 },
+        { name: 'Charlie', marks: 76 },
+        { name: 'Daisy', marks: 92 }
+      ];
+      updateTable();
+    }
+
+    // Load sample data initially
+    resetToSample();
+  </script>
+
+</body>
+</html>
